@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, MessageCircle, Bookmark, Send, Trash2, Edit2, X, Share2 } from "lucide-react"
+import { Heart, MessageCircle, Bookmark, Send, Trash2, Edit2, X, Share2, ChevronLeft, ChevronRight } from "lucide-react"
 import { Post, Comment } from "@/types"
 import { formatDistanceToNow } from "date-fns"
 
@@ -24,6 +24,7 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSaved, setIsSaved] = useState(initialIsSaved)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   useEffect(() => {
     if (showComments && comments.length === 0) {
@@ -188,15 +189,53 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
         )}
       </div>
 
-      {/* Images */}
+      {/* Images Carousel */}
       {post.images && post.images.length > 0 && (
-        <div className="relative w-full aspect-square bg-gray-100">
+        <div className="relative w-full aspect-square bg-gray-100 group">
           <Image
-            src={post.images[0]}
+            src={post.images[currentImageIndex]}
             alt={`${post.carBrand} ${post.carModel}`}
             fill
             className="object-cover"
           />
+
+          {/* Image navigation */}
+          {post.images.length > 1 && (
+            <>
+              {/* Previous button */}
+              {currentImageIndex > 0 && (
+                <button
+                  onClick={() => setCurrentImageIndex(currentImageIndex - 1)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Next button */}
+              {currentImageIndex < post.images.length - 1 && (
+                <button
+                  onClick={() => setCurrentImageIndex(currentImageIndex + 1)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Image indicators */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {post.images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-1.5 h-1.5 rounded-full transition ${
+                      index === currentImageIndex ? "bg-white" : "bg-white/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -232,8 +271,13 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
           </button>
         </div>
 
-        {/* Likes count */}
-        <p className="font-semibold text-sm">{likesCount} likes</p>
+        {/* Likes and views count */}
+        <div className="flex items-center gap-4">
+          <p className="font-semibold text-sm">{likesCount} likes</p>
+          {post.viewsCount !== undefined && post.viewsCount > 0 && (
+            <p className="text-sm text-gray-500">{post.viewsCount} views</p>
+          )}
+        </div>
 
         {/* Caption */}
         <div>

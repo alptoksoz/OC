@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import Navbar from "@/components/layout/Navbar"
 import ProfileHeader from "@/components/profile/ProfileHeader"
 import PostCard from "@/components/posts/PostCard"
+import UserStats from "@/components/profile/UserStats"
 
 export default async function ProfilePage({
   params,
@@ -90,6 +91,33 @@ export default async function ProfilePage({
 
   const isOwnProfile = currentUser?.id === profileUser.id
 
+  // Calculate user statistics
+  const totalLikes = profileUser.posts.reduce(
+    (sum, post) => sum + (post._count?.likes || 0),
+    0
+  )
+  const totalComments = profileUser.posts.reduce(
+    (sum, post) => sum + (post._count?.comments || 0),
+    0
+  )
+  const totalViews = profileUser.posts.reduce(
+    (sum, post) => sum + (post.viewsCount || 0),
+    0
+  )
+
+  // Calculate top hashtags
+  const hashtagCounts = new Map<string, number>()
+  profileUser.posts.forEach((post) => {
+    post.hashtags.forEach((tag) => {
+      hashtagCounts.set(tag, (hashtagCounts.get(tag) || 0) + 1)
+    })
+  })
+
+  const topHashtags = Array.from(hashtagCounts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -103,6 +131,18 @@ export default async function ProfilePage({
           followersCount={profileUser._count.followers}
           followingCount={profileUser._count.following}
         />
+
+        {/* User Statistics */}
+        {profileUser.posts.length > 0 && (
+          <div className="mt-6">
+            <UserStats
+              totalLikes={totalLikes}
+              totalComments={totalComments}
+              totalViews={totalViews}
+              topHashtags={topHashtags}
+            />
+          </div>
+        )}
 
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Posts</h2>

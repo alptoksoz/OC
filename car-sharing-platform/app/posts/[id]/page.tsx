@@ -70,6 +70,18 @@ export default async function PostPage({
     where: { email: session.user?.email! },
   })
 
+  // Increment view count (only if not viewing own post)
+  if (currentUser && post.userId !== currentUser.id) {
+    await prisma.post.update({
+      where: { id: params.id },
+      data: {
+        viewsCount: {
+          increment: 1,
+        },
+      },
+    })
+  }
+
   // Check if current user has saved this post
   const savedPost = currentUser
     ? await prisma.savedPost.findUnique({

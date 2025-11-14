@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Navbar from "@/components/layout/Navbar"
 import PostCard from "@/components/posts/PostCard"
+import SearchResults from "@/components/search/SearchResults"
 
 export default async function SearchPage({
   searchParams,
@@ -19,8 +20,10 @@ export default async function SearchPage({
   const query = searchParams.q || ""
 
   let posts: any[] = []
+  let users: any[] = []
 
   if (query.trim()) {
+    // Search posts
     posts = await prisma.post.findMany({
       where: {
         OR: [
@@ -83,6 +86,48 @@ export default async function SearchPage({
         createdAt: "desc",
       },
     })
+
+    // Search users
+    users = await prisma.user.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+          {
+            username: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+          {
+            email: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        image: true,
+        bio: true,
+        _count: {
+          select: {
+            posts: true,
+            followers: true,
+            following: true,
+          },
+        },
+      },
+      take: 20,
+    })
   }
 
   const currentUser = await prisma.user.findUnique({
@@ -100,20 +145,15 @@ export default async function SearchPage({
 
         {!query.trim() ? (
           <div className="text-center py-12 bg-white rounded-lg">
-            <p className="text-gray-500">Enter a search term to find posts</p>
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg">
-            <p className="text-gray-500 text-lg mb-2">No results found</p>
-            <p className="text-gray-400">Try searching for different brands, models, or hashtags</p>
+            <p className="text-gray-500">Enter a search term to find posts and users</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            <p className="text-gray-600 mb-4">{posts.length} result{posts.length !== 1 ? "s" : ""} found</p>
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post as any} currentUserId={currentUser?.id} />
-            ))}
-          </div>
+          <SearchResults
+            posts={posts}
+            users={users}
+            currentUserId={currentUser?.id}
+            query={query}
+          />
         )}
       </main>
     </div>
