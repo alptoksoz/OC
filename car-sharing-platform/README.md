@@ -4,14 +4,27 @@ Instagram tarzında, araba tutkunlarının arabalarını paylaşabileceği bir s
 
 ## Özellikler
 
+### Kullanıcı Yönetimi
 - ✅ Kullanıcı kayıt ve giriş sistemi
-- ✅ Araba fotoğrafı paylaşma
-- ✅ Beğeni sistemi
-- ✅ Yorum yapabilme
-- ✅ Kullanıcı profilleri
-- ✅ Ana akış (Feed)
-- ✅ Hashtag desteği
+- ✅ Kullanıcı profil sayfaları
+- ✅ Takip/Takipten Çıkma (Follow/Unfollow)
+- ✅ Profil istatistikleri (Posts, Followers, Following)
+
+### Araba Paylaşımı
+- ✅ Araba fotoğrafı paylaşma (URL desteği)
 - ✅ Marka, model ve yıl bilgileri
+- ✅ Açıklama ve hashtag desteği
+- ✅ Ana akış (Feed) ile tüm gönderileri görüntüleme
+
+### Sosyal Özellikler
+- ✅ Beğeni sistemi (Like/Unlike)
+- ✅ Yorum yapabilme ve görüntüleme
+- ✅ Gerçek zamanlı yorum ekleme
+- ✅ Kullanıcı profil linkleri
+
+### Keşfet & Arama
+- ✅ Arama fonksiyonu (marka, model, açıklama, hashtag)
+- ✅ Arama sonuçları sayfası
 
 ## Teknoloji Stack
 
@@ -111,32 +124,58 @@ Uygulama [http://localhost:3000](http://localhost:3000) adresinde çalışacakt�
 4. Resim URL'leri ekleyin (virgülle ayrılmış)
 5. "Share Post" butonuna tıklayın
 
+### Profil Görüntüleme ve Takip
+1. Herhangi bir kullanıcı adına tıklayın
+2. Kullanıcının profilini, istatistiklerini ve paylaşımlarını görün
+3. "Follow" butonuyla kullanıcıyı takip edin
+4. "Following" butonu ile takipten çıkın
+
+### Yorum Yapma
+1. Bir post'un altındaki "View all X comments" butonuna tıklayın
+2. Yorumları görüntüleyin
+3. Alt kısımdaki input alanına yorumunuzu yazın
+4. Gönder ikonuna tıklayın
+
+### Arama
+1. Üst menüdeki arama çubuğuna marka, model veya hashtag yazın
+2. Enter'a basın
+3. Sonuçları görüntüleyin
+
 ## Proje Yapısı
 
 ```
 car-sharing-platform/
 ├── app/
 │   ├── api/
-│   │   ├── auth/           # NextAuth endpoints
-│   │   ├── register/       # Kayıt endpoint
-│   │   └── posts/          # Post CRUD endpoints
-│   ├── login/              # Giriş sayfası
-│   ├── register/           # Kayıt sayfası
-│   ├── create/             # Post oluşturma sayfası
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Ana sayfa (Feed)
+│   │   ├── auth/                    # NextAuth endpoints
+│   │   ├── register/                # Kayıt endpoint
+│   │   ├── posts/
+│   │   │   ├── [id]/
+│   │   │   │   ├── like/            # Like/Unlike endpoint
+│   │   │   │   └── comments/        # Yorum endpoint
+│   │   │   └── route.ts             # Post oluşturma
+│   │   └── users/
+│   │       └── [id]/follow/         # Takip endpoint
+│   ├── login/                       # Giriş sayfası
+│   ├── register/                    # Kayıt sayfası
+│   ├── create/                      # Post oluşturma sayfası
+│   ├── profile/[username]/          # Kullanıcı profil sayfası
+│   ├── search/                      # Arama sayfası
+│   ├── layout.tsx                   # Root layout
+│   └── page.tsx                     # Ana sayfa (Feed)
 ├── components/
-│   ├── auth/               # Auth bileşenleri
-│   ├── layout/             # Layout bileşenleri (Navbar)
-│   ├── posts/              # Post bileşenleri
-│   └── providers/          # Context providers
+│   ├── auth/                        # Auth bileşenleri
+│   ├── layout/                      # Navbar
+│   ├── posts/                       # PostCard (like & comment)
+│   ├── profile/                     # ProfileHeader
+│   └── providers/                   # SessionProvider
 ├── lib/
-│   ├── auth.ts             # NextAuth config
-│   └── prisma.ts           # Prisma client
+│   ├── auth.ts                      # NextAuth config
+│   └── prisma.ts                    # Prisma client
 ├── prisma/
-│   └── schema.prisma       # Veritabanı şeması
+│   └── schema.prisma                # Veritabanı şeması
 └── types/
-    └── index.ts            # TypeScript tipleri
+    └── index.ts                     # TypeScript tipleri
 ```
 
 ## Veritabanı Şeması
@@ -151,14 +190,16 @@ car-sharing-platform/
 
 ## Gelecek Özellikler
 
-- [ ] Profil sayfası
-- [ ] Kullanıcı takip sistemi
 - [ ] Gerçek dosya yükleme (Uploadthing/Cloudinary)
-- [ ] Yorum gösterme ve ekleme
-- [ ] Arama ve filtreleme
-- [ ] Keşfet sayfası
-- [ ] Bildirimler
+- [ ] Keşfet/Trending sayfası
+- [ ] Bildirimler sistemi
 - [ ] Mesajlaşma sistemi
+- [ ] Profil düzenleme
+- [ ] Post silme ve düzenleme
+- [ ] Yorum silme
+- [ ] Favori/Bookmark sistemi
+- [ ] Dark mode
+- [ ] Responsive mobile tasarım iyileştirmeleri
 
 ## Katkıda Bulunma
 
