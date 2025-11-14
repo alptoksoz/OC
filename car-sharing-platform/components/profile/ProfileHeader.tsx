@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { User as UserIcon, Calendar } from "lucide-react"
+import Link from "next/link"
+import { User as UserIcon, Calendar, Edit } from "lucide-react"
 import { User } from "@/types"
 
 interface ProfileHeaderProps {
@@ -66,7 +67,15 @@ export default function ProfileHeader({
               <p className="text-gray-500">@{user.username || user.email.split("@")[0]}</p>
             </div>
 
-            {!isOwnProfile && (
+            {isOwnProfile ? (
+              <Link
+                href="/profile/edit"
+                className="inline-flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition"
+              >
+                <Edit className="w-4 h-4" />
+                Edit Profile
+              </Link>
+            ) : (
               <button
                 onClick={handleFollowToggle}
                 disabled={isLoading}

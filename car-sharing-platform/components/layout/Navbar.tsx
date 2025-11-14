@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
-import { Car, Home, PlusSquare, User, LogOut, Search } from "lucide-react"
+import { Car, Home, PlusSquare, User, LogOut, Search, Bookmark, Compass } from "lucide-react"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -51,8 +51,14 @@ export default function Navbar() {
                 <Link href="/" className="text-gray-700 hover:text-blue-500 transition">
                   <Home className="w-6 h-6" />
                 </Link>
+                <Link href="/explore" className="text-gray-700 hover:text-blue-500 transition">
+                  <Compass className="w-6 h-6" />
+                </Link>
                 <Link href="/create" className="text-gray-700 hover:text-blue-500 transition">
                   <PlusSquare className="w-6 h-6" />
+                </Link>
+                <Link href="/saved" className="text-gray-700 hover:text-blue-500 transition">
+                  <Bookmark className="w-6 h-6" />
                 </Link>
                 <Link
                   href={`/profile/${session.user?.email}`}

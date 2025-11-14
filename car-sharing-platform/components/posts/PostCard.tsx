@@ -3,16 +3,17 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, MessageCircle, Bookmark, Send } from "lucide-react"
+import { Heart, MessageCircle, Bookmark, Send, Trash2 } from "lucide-react"
 import { Post, Comment } from "@/types"
 import { formatDistanceToNow } from "date-fns"
 
 interface PostCardProps {
   post: Post
   currentUserId?: string
+  initialIsSaved?: boolean
 }
 
-export default function PostCard({ post, currentUserId }: PostCardProps) {
+export default function PostCard({ post, currentUserId, initialIsSaved = false }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(
     post.likes?.some((like) => like.userId === currentUserId) || false
   )
@@ -21,6 +22,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   const [comments, setComments] = useState<Comment[]>(post.comments || [])
   const [newComment, setNewComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSaved, setIsSaved] = useState(initialIsSaved)
 
   useEffect(() => {
     if (showComments && comments.length === 0) {
@@ -81,6 +83,38 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     }
   }
 
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`/api/posts/${post.id}/save`, {
+        method: isSaved ? "DELETE" : "POST",
+      })
+
+      if (response.ok) {
+        setIsSaved(!isSaved)
+      }
+    } catch (error) {
+      console.error("Error saving post:", error)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this post?")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error)
+    }
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
       {/* Header */}
@@ -96,6 +130,15 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             </p>
           </div>
         </Link>
+        {post.userId === currentUserId && (
+          <button
+            onClick={handleDelete}
+            className="text-gray-400 hover:text-red-500 transition"
+            title="Delete post"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Images */}
@@ -127,8 +170,11 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
               <MessageCircle className="w-6 h-6" />
             </button>
           </div>
-          <button className="text-gray-700 hover:text-blue-500 transition">
-            <Bookmark className="w-6 h-6" />
+          <button
+            onClick={handleSave}
+            className={`transition ${isSaved ? "text-blue-500" : "text-gray-700 hover:text-blue-500"}`}
+          >
+            <Bookmark className={`w-6 h-6 ${isSaved ? "fill-current" : ""}`} />
           </button>
         </div>
 
