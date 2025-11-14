@@ -7,6 +7,7 @@ Instagram tarzında, araba tutkunlarının arabalarını paylaşabileceği bir s
 ### Kullanıcı Yönetimi
 - ✅ Kullanıcı kayıt ve giriş sistemi
 - ✅ Kullanıcı profil sayfaları
+- ✅ Profil düzenleme (ad, kullanıcı adı, bio)
 - ✅ Takip/Takipten Çıkma (Follow/Unfollow)
 - ✅ Profil istatistikleri (Posts, Followers, Following)
 
@@ -15,16 +16,23 @@ Instagram tarzında, araba tutkunlarının arabalarını paylaşabileceği bir s
 - ✅ Marka, model ve yıl bilgileri
 - ✅ Açıklama ve hashtag desteği
 - ✅ Ana akış (Feed) ile tüm gönderileri görüntüleme
+- ✅ Post silme (sadece sahip silebilir)
 
 ### Sosyal Özellikler
 - ✅ Beğeni sistemi (Like/Unlike)
 - ✅ Yorum yapabilme ve görüntüleme
 - ✅ Gerçek zamanlı yorum ekleme
+- ✅ Bookmark/Save sistemi
+- ✅ Kaydedilen postları görüntüleme
 - ✅ Kullanıcı profil linkleri
 
 ### Keşfet & Arama
 - ✅ Arama fonksiyonu (marka, model, açıklama, hashtag)
 - ✅ Arama sonuçları sayfası
+- ✅ Keşfet sayfası
+- ✅ Popüler kullanıcılar listesi
+- ✅ Trending postlar (son 7 gün en çok beğenilen)
+- ✅ En yeni postlar
 
 ## Teknoloji Stack
 
@@ -180,10 +188,11 @@ car-sharing-platform/
 
 ## Veritabanı Şeması
 
-- **User** - Kullanıcı bilgileri
-- **Post** - Araba paylaşımları
+- **User** - Kullanıcı bilgileri (name, username, email, bio, etc.)
+- **Post** - Araba paylaşımları (brand, model, year, images, hashtags)
 - **Like** - Beğeniler
 - **Comment** - Yorumlar
+- **SavedPost** - Kaydedilen postlar
 - **Follow** - Takip ilişkileri
 - **Account** - NextAuth hesap bilgileri
 - **Session** - Oturum bilgileri
@@ -191,15 +200,17 @@ car-sharing-platform/
 ## Gelecek Özellikler
 
 - [ ] Gerçek dosya yükleme (Uploadthing/Cloudinary)
-- [ ] Keşfet/Trending sayfası
 - [ ] Bildirimler sistemi
 - [ ] Mesajlaşma sistemi
-- [ ] Profil düzenleme
-- [ ] Post silme ve düzenleme
+- [ ] Post düzenleme
 - [ ] Yorum silme
-- [ ] Favori/Bookmark sistemi
 - [ ] Dark mode
 - [ ] Responsive mobile tasarım iyileştirmeleri
+- [ ] Email verification
+- [ ] Password reset
+- [ ] Advanced filtering (by brand, year range, etc.)
+- [ ] Infinite scroll
+- [ ] Stories özelliği
 
 ## Katkıda Bulunma
 
