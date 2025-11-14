@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import Navbar from "@/components/layout/Navbar"
 import PostCard from "@/components/posts/PostCard"
 import PostFilters from "@/components/filters/PostFilters"
+import StoryCircles from "@/components/stories/StoryCircles"
 
 export default async function Home({
   searchParams,
@@ -95,6 +96,8 @@ export default async function Home({
       <Navbar />
 
       <main className="max-w-2xl mx-auto py-8 px-4">
+        <StoryCircles currentUserId={currentUser?.id} />
+
         <PostFilters />
 
         {posts.length === 0 ? (

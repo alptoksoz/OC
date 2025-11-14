@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { User as UserIcon, Calendar, Edit } from "lucide-react"
+import { User as UserIcon, Calendar, Edit, MessageCircle } from "lucide-react"
 import { User } from "@/types"
 
 interface ProfileHeaderProps {
@@ -49,6 +49,25 @@ export default function ProfileHeader({
     }
   }
 
+  const handleMessage = async () => {
+    try {
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ otherUserId: user.id }),
+      })
+
+      if (response.ok) {
+        const conversation = await response.json()
+        router.push(`/messages/${conversation.id}`)
+      }
+    } catch (error) {
+      console.error("Error creating conversation:", error)
+    }
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex flex-col md:flex-row gap-6">
@@ -76,17 +95,26 @@ export default function ProfileHeader({
                 Edit Profile
               </Link>
             ) : (
-              <button
-                onClick={handleFollowToggle}
-                disabled={isLoading}
-                className={`px-6 py-2 rounded-lg font-medium transition disabled:opacity-50 ${
-                  isFollowing
-                    ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                }`}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleFollowToggle}
+                  disabled={isLoading}
+                  className={`px-6 py-2 rounded-lg font-medium transition disabled:opacity-50 ${
+                    isFollowing
+                      ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+                <button
+                  onClick={handleMessage}
+                  className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition inline-flex items-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Message
+                </button>
+              </div>
             )}
           </div>
 

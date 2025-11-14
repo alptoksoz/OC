@@ -22,15 +22,20 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  posts         Post[]
-  likes         Like[]
-  comments      Comment[]
-  savedPosts    SavedPost[]
-  followers     Follow[]  @relation("following")
-  following     Follow[]  @relation("follower")
-  accounts      Account[]
-  sessions      Session[]
-  notifications Notification[]
+  posts              Post[]
+  likes              Like[]
+  comments           Comment[]
+  savedPosts         SavedPost[]
+  followers          Follow[]         @relation("following")
+  following          Follow[]         @relation("follower")
+  accounts           Account[]
+  sessions           Session[]
+  notifications      Notification[]
+  sentMessages       Message[]        @relation("sender")
+  receivedMessages   Message[]        @relation("receiver")
+  stories            Story[]
+  conversationsUser1 Conversation[]   @relation("user1")
+  conversationsUser2 Conversation[]   @relation("user2")
 
   @@map("users")
 }
@@ -154,4 +159,48 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+model Conversation {
+  id               String    @id @default(cuid())
+  user1Id          String
+  user2Id          String
+  lastMessageAt    DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user1    User      @relation("user1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2    User      @relation("user2", fields: [user2Id], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([user1Id, user2Id])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  receiverId     String
+  content        String
+  read           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User         @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Story {
+  id        String   @id @default(cuid())
+  userId    String
+  imageUrl  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("stories")
 }
