@@ -29,6 +29,23 @@ export async function POST(
       },
     })
 
+    // Create notification for post owner (if not liking own post)
+    const post = await prisma.post.findUnique({
+      where: { id: params.id },
+      select: { userId: true },
+    })
+
+    if (post && post.userId !== user.id) {
+      await prisma.notification.create({
+        data: {
+          userId: post.userId,
+          type: "like",
+          actorId: user.id,
+          postId: params.id,
+        },
+      })
+    }
+
     return NextResponse.json(like)
   } catch (error) {
     console.error("Like error:", error)

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, MessageCircle, Bookmark, Send, Trash2, Edit2, X } from "lucide-react"
+import { Heart, MessageCircle, Bookmark, Send, Trash2, Edit2, X, Share2 } from "lucide-react"
 import { Post, Comment } from "@/types"
 import { formatDistanceToNow } from "date-fns"
 
@@ -23,6 +23,7 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
   const [newComment, setNewComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSaved, setIsSaved] = useState(initialIsSaved)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
 
   useEffect(() => {
     if (showComments && comments.length === 0) {
@@ -57,7 +58,7 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
     }
   }
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent, parentId: string | null = null) => {
     e.preventDefault()
     if (!newComment.trim() || isSubmitting) return
 
@@ -68,13 +69,22 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content: newComment }),
+        body: JSON.stringify({
+          content: newComment,
+          parentId: parentId || replyingTo,
+        }),
       })
 
       if (response.ok) {
         const comment = await response.json()
-        setComments([comment, ...comments])
+        if (replyingTo) {
+          // Add reply to parent comment
+          await fetchComments()
+        } else {
+          setComments([comment, ...comments])
+        }
         setNewComment("")
+        setReplyingTo(null)
       }
     } catch (error) {
       console.error("Error posting comment:", error)
@@ -94,6 +104,16 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
       }
     } catch (error) {
       console.error("Error saving post:", error)
+    }
+  }
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/posts/${post.id}`
+    try {
+      await navigator.clipboard.writeText(url)
+      alert("Link copied to clipboard!")
+    } catch (error) {
+      console.error("Error copying link:", error)
     }
   }
 
@@ -196,6 +216,13 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
             >
               <MessageCircle className="w-6 h-6" />
             </button>
+            <button
+              onClick={handleShare}
+              className="text-gray-700 hover:text-green-500 transition"
+              title="Share"
+            >
+              <Share2 className="w-6 h-6" />
+            </button>
           </div>
           <button
             onClick={handleSave}
@@ -217,8 +244,16 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
             {post.description}
           </p>
           {post.hashtags && post.hashtags.length > 0 && (
-            <p className="text-sm text-blue-500 mt-1">
-              {post.hashtags.map((tag) => `#${tag}`).join(" ")}
+            <p className="text-sm mt-1">
+              {post.hashtags.map((tag, index) => (
+                <Link
+                  key={index}
+                  href={`/hashtag/${encodeURIComponent(tag)}`}
+                  className="text-blue-500 hover:underline mr-2"
+                >
+                  #{tag}
+                </Link>
+              ))}
             </p>
           )}
         </div>
@@ -239,31 +274,108 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
             {/* Comment list */}
             <div className="max-h-60 overflow-y-auto space-y-2">
               {comments.map((comment) => (
-                <div key={comment.id} className="flex space-x-2 group">
-                  <Link href={`/profile/${comment.user.username}`}>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                      {comment.user.name?.[0] || comment.user.email[0]}
+                <div key={comment.id} className="space-y-2">
+                  {/* Main comment */}
+                  <div className="flex space-x-2 group">
+                    <Link href={`/profile/${comment.user.username}`}>
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        {comment.user.name?.[0] || comment.user.email[0]}
+                      </div>
+                    </Link>
+                    <div className="flex-1">
+                      <p className="text-sm">
+                        <Link href={`/profile/${comment.user.username}`} className="font-semibold mr-2">
+                          {comment.user.name || comment.user.username}
+                        </Link>
+                        {comment.content}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <p className="text-xs text-gray-400">
+                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                        </p>
+                        <button
+                          onClick={() => setReplyingTo(comment.id)}
+                          className="text-xs text-gray-500 hover:text-blue-500 font-semibold"
+                        >
+                          Reply
+                        </button>
+                      </div>
                     </div>
-                  </Link>
-                  <div className="flex-1">
-                    <p className="text-sm">
-                      <Link href={`/profile/${comment.user.username}`} className="font-semibold mr-2">
-                        {comment.user.name || comment.user.username}
-                      </Link>
-                      {comment.content}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                    </p>
+                    {comment.user.id === currentUserId && (
+                      <button
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                        title="Delete comment"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                  {comment.user.id === currentUserId && (
-                    <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
-                      title="Delete comment"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+
+                  {/* Nested replies */}
+                  {(comment as any).replies && (comment as any).replies.length > 0 && (
+                    <div className="ml-10 space-y-2">
+                      {(comment as any).replies.map((reply: any) => (
+                        <div key={reply.id} className="flex space-x-2 group">
+                          <Link href={`/profile/${reply.user.username}`}>
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                              {reply.user.name?.[0] || reply.user.email?.[0] || "U"}
+                            </div>
+                          </Link>
+                          <div className="flex-1">
+                            <p className="text-sm">
+                              <Link href={`/profile/${reply.user.username}`} className="font-semibold mr-2">
+                                {reply.user.name || reply.user.username}
+                              </Link>
+                              {reply.content}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
+                            </p>
+                          </div>
+                          {reply.user.id === currentUserId && (
+                            <button
+                              onClick={() => handleDeleteComment(reply.id)}
+                              className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                              title="Delete reply"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Reply form */}
+                  {replyingTo === comment.id && (
+                    <div className="ml-10">
+                      <form onSubmit={handleCommentSubmit} className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          placeholder={`Reply to ${comment.user.name || comment.user.username}...`}
+                          className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1 outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={isSubmitting}
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setReplyingTo(null)}
+                          className="text-xs text-gray-500 hover:text-gray-700"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting || !newComment.trim()}
+                          className="text-blue-500 hover:text-blue-600 disabled:text-gray-300"
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
+                      </form>
+                    </div>
                   )}
                 </div>
               ))}

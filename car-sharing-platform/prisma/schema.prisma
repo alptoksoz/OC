@@ -30,6 +30,7 @@ model User {
   following     Follow[]  @relation("follower")
   accounts      Account[]
   sessions      Session[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -101,12 +102,15 @@ model Comment {
   id        String   @id @default(cuid())
   userId    String
   postId    String
+  parentId  String?  // for nested comments/replies
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
 
   @@map("comments")
 }
@@ -135,4 +139,18 @@ model SavedPost {
 
   @@unique([userId, postId])
   @@map("saved_posts")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "like", "comment", "follow"
+  actorId   String   // who did the action
+  postId    String?  // if type is like or comment
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }

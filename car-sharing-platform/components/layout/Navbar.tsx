@@ -1,15 +1,37 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
-import { Car, Home, PlusSquare, User, LogOut, Search, Bookmark, Compass } from "lucide-react"
+import { Car, Home, PlusSquare, User, LogOut, Search, Bookmark, Compass, Bell } from "lucide-react"
 
 export default function Navbar() {
   const { data: session } = useSession()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (session) {
+      fetchUnreadCount()
+      // Poll every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [session])
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await fetch("/api/notifications/unread")
+      if (response.ok) {
+        const data = await response.json()
+        setUnreadCount(data.count)
+      }
+    } catch (error) {
+      console.error("Failed to fetch unread count:", error)
+    }
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +78,14 @@ export default function Navbar() {
                 </Link>
                 <Link href="/create" className="text-gray-700 hover:text-blue-500 transition">
                   <PlusSquare className="w-6 h-6" />
+                </Link>
+                <Link href="/notifications" className="text-gray-700 hover:text-blue-500 transition relative">
+                  <Bell className="w-6 h-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
                 </Link>
                 <Link href="/saved" className="text-gray-700 hover:text-blue-500 transition">
                   <Bookmark className="w-6 h-6" />

@@ -11,6 +11,7 @@ export async function GET(
     const comments = await prisma.comment.findMany({
       where: {
         postId: params.id,
+        parentId: null, // only get top-level comments
       },
       include: {
         user: {
@@ -20,6 +21,21 @@ export async function GET(
             username: true,
             email: true,
             image: true,
+          },
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
           },
         },
       },
@@ -55,7 +71,7 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { content } = body
+    const { content, parentId } = body
 
     if (!content || content.trim() === "") {
       return new NextResponse("Content is required", { status: 400 })
@@ -65,6 +81,7 @@ export async function POST(
       data: {
         userId: user.id,
         postId: params.id,
+        parentId: parentId || null,
         content: content.trim(),
       },
       include: {
@@ -79,6 +96,23 @@ export async function POST(
         },
       },
     })
+
+    // Create notification for post owner (if not commenting on own post)
+    const post = await prisma.post.findUnique({
+      where: { id: params.id },
+      select: { userId: true },
+    })
+
+    if (post && post.userId !== user.id) {
+      await prisma.notification.create({
+        data: {
+          userId: post.userId,
+          type: "comment",
+          actorId: user.id,
+          postId: params.id,
+        },
+      })
+    }
 
     return NextResponse.json(comment)
   } catch (error) {
