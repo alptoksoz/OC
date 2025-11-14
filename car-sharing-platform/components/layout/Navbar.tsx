@@ -1,0 +1,78 @@
+"use client"
+
+import Link from "next/link"
+import { useSession, signOut } from "next-auth/react"
+import { Car, Home, PlusSquare, User, LogOut, Search } from "lucide-react"
+
+export default function Navbar() {
+  const { data: session } = useSession()
+
+  return (
+    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2 font-bold text-xl">
+            <Car className="w-6 h-6 text-blue-500" />
+            <span>CarShare</span>
+          </Link>
+
+          {/* Search (placeholder for now) */}
+          {session && (
+            <div className="hidden md:flex flex-1 max-w-md mx-8">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search cars, brands, models..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="flex items-center space-x-6">
+            {session ? (
+              <>
+                <Link href="/" className="text-gray-700 hover:text-blue-500 transition">
+                  <Home className="w-6 h-6" />
+                </Link>
+                <Link href="/create" className="text-gray-700 hover:text-blue-500 transition">
+                  <PlusSquare className="w-6 h-6" />
+                </Link>
+                <Link
+                  href={`/profile/${session.user?.email}`}
+                  className="text-gray-700 hover:text-blue-500 transition"
+                >
+                  <User className="w-6 h-6" />
+                </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="text-gray-700 hover:text-red-500 transition"
+                >
+                  <LogOut className="w-6 h-6" />
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/login"
+                  className="text-gray-700 hover:text-blue-500 font-medium transition"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  )
+}
