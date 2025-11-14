@@ -6,6 +6,9 @@ import Link from "next/link"
 import { Heart, MessageCircle, Bookmark, Send, Trash2, Edit2, X, Share2, ChevronLeft, ChevronRight } from "lucide-react"
 import { Post, Comment } from "@/types"
 import { formatDistanceToNow } from "date-fns"
+import { useToast } from "@/components/providers/ToastProvider"
+import ConfirmModal from "@/components/modals/ConfirmModal"
+import ImageLightbox from "@/components/modals/ImageLightbox"
 
 interface PostCardProps {
   post: Post
@@ -14,6 +17,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, currentUserId, initialIsSaved = false }: PostCardProps) {
+  const { showToast } = useToast()
   const [isLiked, setIsLiked] = useState(
     post.likes?.some((like) => like.userId === currentUserId) || false
   )
@@ -25,6 +29,10 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
   const [isSaved, setIsSaved] = useState(initialIsSaved)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null)
+  const [showLightbox, setShowLightbox] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
     if (showComments && comments.length === 0) {
@@ -45,17 +53,24 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
   }
 
   const handleLike = async () => {
+    const newLikedState = !isLiked
+    setIsLiked(newLikedState)
+    setLikesCount(newLikedState ? likesCount + 1 : likesCount - 1)
+
     try {
       const response = await fetch(`/api/posts/${post.id}/like`, {
         method: isLiked ? "DELETE" : "POST",
       })
 
-      if (response.ok) {
-        setIsLiked(!isLiked)
-        setLikesCount(isLiked ? likesCount - 1 : likesCount + 1)
+      if (!response.ok) {
+        setIsLiked(!newLikedState)
+        setLikesCount(newLikedState ? likesCount - 1 : likesCount + 1)
+        showToast("error", "Failed to update like")
       }
     } catch (error) {
-      console.error("Error liking post:", error)
+      setIsLiked(!newLikedState)
+      setLikesCount(newLikedState ? likesCount - 1 : likesCount + 1)
+      showToast("error", "Failed to update like")
     }
   }
 
@@ -112,45 +127,55 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
     const url = `${window.location.origin}/posts/${post.id}`
     try {
       await navigator.clipboard.writeText(url)
-      alert("Link copied to clipboard!")
+      showToast("success", "Link copied to clipboard!")
     } catch (error) {
-      console.error("Error copying link:", error)
+      showToast("error", "Failed to copy link")
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this post?")) {
-      return
-    }
+  const confirmDelete = () => {
+    setShowDeleteModal(true)
+  }
 
+  const handleDelete = async () => {
     try {
       const response = await fetch(`/api/posts/${post.id}`, {
         method: "DELETE",
       })
 
       if (response.ok) {
-        window.location.reload()
+        showToast("success", "Post deleted successfully")
+        setTimeout(() => window.location.reload(), 1000)
+      } else {
+        showToast("error", "Failed to delete post")
       }
     } catch (error) {
-      console.error("Error deleting post:", error)
+      showToast("error", "Failed to delete post")
     }
   }
 
-  const handleDeleteComment = async (commentId: string) => {
-    if (!confirm("Are you sure you want to delete this comment?")) {
-      return
-    }
+  const confirmDeleteComment = (commentId: string) => {
+    setDeleteCommentId(commentId)
+  }
+
+  const handleDeleteComment = async () => {
+    if (!deleteCommentId) return
 
     try {
-      const response = await fetch(`/api/comments/${commentId}`, {
+      const response = await fetch(`/api/comments/${deleteCommentId}`, {
         method: "DELETE",
       })
 
       if (response.ok) {
-        setComments(comments.filter((c) => c.id !== commentId))
+        setComments(comments.filter((c) => c.id !== deleteCommentId))
+        showToast("success", "Comment deleted")
+      } else {
+        showToast("error", "Failed to delete comment")
       }
     } catch (error) {
-      console.error("Error deleting comment:", error)
+      showToast("error", "Failed to delete comment")
+    } finally {
+      setDeleteCommentId(null)
     }
   }
 
@@ -179,7 +204,7 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
               <Edit2 className="w-5 h-5" />
             </Link>
             <button
-              onClick={handleDelete}
+              onClick={confirmDelete}
               className="text-gray-400 hover:text-red-500 transition"
               title="Delete post"
             >
@@ -196,7 +221,11 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
             src={post.images[currentImageIndex]}
             alt={`${post.carBrand} ${post.carModel}`}
             fill
-            className="object-cover"
+            className="object-cover cursor-pointer"
+            onClick={() => {
+              setLightboxIndex(currentImageIndex)
+              setShowLightbox(true)
+            }}
           />
 
           {/* Image navigation */}
@@ -347,7 +376,7 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
                     </div>
                     {comment.user.id === currentUserId && (
                       <button
-                        onClick={() => handleDeleteComment(comment.id)}
+                        onClick={() => confirmDeleteComment(comment.id)}
                         className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
                         title="Delete comment"
                       >
@@ -379,7 +408,7 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
                           </div>
                           {reply.user.id === currentUserId && (
                             <button
-                              onClick={() => handleDeleteComment(reply.id)}
+                              onClick={() => confirmDeleteComment(reply.id)}
                               className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
                               title="Delete reply"
                             >
@@ -451,6 +480,40 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
           {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
         </p>
       </div>
+
+      {/* Delete Post Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Delete Post"
+        message="Are you sure you want to delete this post? This action cannot be undone."
+        confirmText="Delete"
+        variant="danger"
+      />
+
+      {/* Delete Comment Modal */}
+      <ConfirmModal
+        isOpen={!!deleteCommentId}
+        onClose={() => setDeleteCommentId(null)}
+        onConfirm={handleDeleteComment}
+        title="Delete Comment"
+        message="Are you sure you want to delete this comment?"
+        confirmText="Delete"
+        variant="danger"
+      />
+
+      {/* Image Lightbox */}
+      {post.images && post.images.length > 0 && (
+        <ImageLightbox
+          images={post.images}
+          currentIndex={lightboxIndex}
+          isOpen={showLightbox}
+          onClose={() => setShowLightbox(false)}
+          onNext={() => setLightboxIndex((prev) => Math.min(prev + 1, post.images.length - 1))}
+          onPrevious={() => setLightboxIndex((prev) => Math.max(prev - 1, 0))}
+        />
+      )}
     </div>
   )
 }
