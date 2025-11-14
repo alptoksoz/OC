@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, MessageCircle, Bookmark, Send, Trash2 } from "lucide-react"
+import { Heart, MessageCircle, Bookmark, Send, Trash2, Edit2, X } from "lucide-react"
 import { Post, Comment } from "@/types"
 import { formatDistanceToNow } from "date-fns"
 
@@ -115,6 +115,24 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
     }
   }
 
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm("Are you sure you want to delete this comment?")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/comments/${commentId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        setComments(comments.filter((c) => c.id !== commentId))
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error)
+    }
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
       {/* Header */}
@@ -131,13 +149,22 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
           </div>
         </Link>
         {post.userId === currentUserId && (
-          <button
-            onClick={handleDelete}
-            className="text-gray-400 hover:text-red-500 transition"
-            title="Delete post"
-          >
-            <Trash2 className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <Link
+              href={`/posts/${post.id}/edit`}
+              className="text-gray-400 hover:text-blue-500 transition"
+              title="Edit post"
+            >
+              <Edit2 className="w-5 h-5" />
+            </Link>
+            <button
+              onClick={handleDelete}
+              className="text-gray-400 hover:text-red-500 transition"
+              title="Delete post"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
         )}
       </div>
 
@@ -212,7 +239,7 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
             {/* Comment list */}
             <div className="max-h-60 overflow-y-auto space-y-2">
               {comments.map((comment) => (
-                <div key={comment.id} className="flex space-x-2">
+                <div key={comment.id} className="flex space-x-2 group">
                   <Link href={`/profile/${comment.user.username}`}>
                     <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                       {comment.user.name?.[0] || comment.user.email[0]}
@@ -229,6 +256,15 @@ export default function PostCard({ post, currentUserId, initialIsSaved = false }
                       {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                     </p>
                   </div>
+                  {comment.user.id === currentUserId && (
+                    <button
+                      onClick={() => handleDeleteComment(comment.id)}
+                      className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                      title="Delete comment"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
