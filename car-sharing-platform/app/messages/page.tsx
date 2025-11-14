@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Navbar from "@/components/layout/Navbar"
+import EmptyState from "@/components/ui/EmptyState"
 import { MessageCircle, User as UserIcon } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -71,10 +72,14 @@ export default function MessagesPage() {
         </h1>
 
         {conversations.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg">
-            <MessageCircle className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg mb-2">No messages yet</p>
-            <p className="text-gray-400">Start a conversation with someone!</p>
+          <div className="bg-white rounded-lg">
+            <EmptyState
+              icon={MessageCircle}
+              title="No messages yet"
+              description="Start a conversation with someone from the community!"
+              actionLabel="Explore Users"
+              actionHref="/search"
+            />
           </div>
         ) : (
           <div className="bg-white rounded-lg divide-y">

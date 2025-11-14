@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Navbar from "@/components/layout/Navbar"
 import PostCard from "@/components/posts/PostCard"
+import EmptyState from "@/components/ui/EmptyState"
+import { Bookmark } from "lucide-react"
 
 export default async function SavedPostsPage() {
   const session = await getServerSession(authOptions)
@@ -72,9 +74,14 @@ export default async function SavedPostsPage() {
         <h1 className="text-2xl font-bold mb-6">Saved Posts</h1>
 
         {savedPosts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg">
-            <p className="text-gray-500 text-lg mb-2">No saved posts yet</p>
-            <p className="text-gray-400">Posts you save will appear here</p>
+          <div className="bg-white rounded-lg">
+            <EmptyState
+              icon={Bookmark}
+              title="No saved posts yet"
+              description="Save posts to easily find them later. Tap the bookmark icon on any post to save it."
+              actionLabel="Explore Posts"
+              actionHref="/explore"
+            />
           </div>
         ) : (
           <div className="space-y-6">

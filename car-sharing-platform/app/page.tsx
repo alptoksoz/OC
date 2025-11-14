@@ -6,6 +6,8 @@ import Navbar from "@/components/layout/Navbar"
 import PostCard from "@/components/posts/PostCard"
 import PostFilters from "@/components/filters/PostFilters"
 import StoryCircles from "@/components/stories/StoryCircles"
+import EmptyState from "@/components/ui/EmptyState"
+import { Car } from "lucide-react"
 
 export default async function Home({
   searchParams,
@@ -101,9 +103,14 @@ export default async function Home({
         <PostFilters />
 
         {posts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg">
-            <p className="text-gray-500 text-lg mb-4">No posts found</p>
-            <p className="text-gray-400">Try adjusting your filters or be the first to share!</p>
+          <div className="bg-white rounded-lg">
+            <EmptyState
+              icon={Car}
+              title="No posts found"
+              description="Try adjusting your filters or be the first to share your car!"
+              actionLabel="Create Post"
+              actionHref="/create"
+            />
           </div>
         ) : (
           <div className="space-y-6">

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Navbar from "@/components/layout/Navbar"
-import { Heart, MessageCircle, UserPlus, User as UserIcon } from "lucide-react"
+import EmptyState from "@/components/ui/EmptyState"
+import { Heart, MessageCircle, UserPlus, User as UserIcon, Bell } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 interface Notification {
@@ -119,11 +120,14 @@ export default function NotificationsPage() {
         <h1 className="text-2xl font-bold mb-6">Notifications</h1>
 
         {notifications.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg">
-            <p className="text-gray-500 text-lg mb-2">No notifications yet</p>
-            <p className="text-gray-400">
-              When someone likes or comments on your posts, you'll see it here
-            </p>
+          <div className="bg-white rounded-lg">
+            <EmptyState
+              icon={Bell}
+              title="No notifications yet"
+              description="When someone likes or comments on your posts, you'll see it here"
+              actionLabel="Explore Posts"
+              actionHref="/explore"
+            />
           </div>
         ) : (
           <div className="bg-white rounded-lg divide-y">

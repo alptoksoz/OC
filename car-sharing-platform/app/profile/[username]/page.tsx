@@ -6,6 +6,8 @@ import Navbar from "@/components/layout/Navbar"
 import ProfileHeader from "@/components/profile/ProfileHeader"
 import PostCard from "@/components/posts/PostCard"
 import UserStats from "@/components/profile/UserStats"
+import EmptyState from "@/components/ui/EmptyState"
+import { Image } from "lucide-react"
 
 export default async function ProfilePage({
   params,
@@ -147,8 +149,18 @@ export default async function ProfilePage({
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Posts</h2>
           {profileUser.posts.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-gray-500">No posts yet</p>
+            <div className="bg-white rounded-lg">
+              <EmptyState
+                icon={Image}
+                title={isOwnProfile ? "You haven't posted yet" : "No posts yet"}
+                description={
+                  isOwnProfile
+                    ? "Share your first car to get started!"
+                    : "This user hasn't shared any posts yet"
+                }
+                actionLabel={isOwnProfile ? "Create Post" : undefined}
+                actionHref={isOwnProfile ? "/create" : undefined}
+              />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

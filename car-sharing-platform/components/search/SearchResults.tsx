@@ -3,7 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import PostCard from "@/components/posts/PostCard"
-import { User as UserIcon } from "lucide-react"
+import EmptyState from "@/components/ui/EmptyState"
+import { User as UserIcon, Search, FileText, Users } from "lucide-react"
 
 interface SearchResultsProps {
   posts: any[]
@@ -19,9 +20,14 @@ export default function SearchResults({ posts, users, currentUserId, query }: Se
 
   if (totalResults === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg">
-        <p className="text-gray-500 text-lg mb-2">No results found</p>
-        <p className="text-gray-400">Try searching for different keywords</p>
+      <div className="bg-white rounded-lg">
+        <EmptyState
+          icon={Search}
+          title="No results found"
+          description={`No posts or users found for "${query}". Try searching for different keywords.`}
+          actionLabel="Explore All Posts"
+          actionHref="/explore"
+        />
       </div>
     )
   }
@@ -58,8 +64,12 @@ export default function SearchResults({ posts, users, currentUserId, query }: Se
       {activeTab === "posts" && (
         <div className="space-y-6">
           {posts.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-gray-500">No posts found for "{query}"</p>
+            <div className="bg-white rounded-lg">
+              <EmptyState
+                icon={FileText}
+                title="No posts found"
+                description={`No posts found for "${query}". Try searching for different keywords or check the Users tab.`}
+              />
             </div>
           ) : (
             <>
@@ -78,8 +88,12 @@ export default function SearchResults({ posts, users, currentUserId, query }: Se
       {activeTab === "users" && (
         <div className="space-y-4">
           {users.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-gray-500">No users found for "{query}"</p>
+            <div className="bg-white rounded-lg">
+              <EmptyState
+                icon={Users}
+                title="No users found"
+                description={`No users found for "${query}". Try searching for different keywords or check the Posts tab.`}
+              />
             </div>
           ) : (
             <>

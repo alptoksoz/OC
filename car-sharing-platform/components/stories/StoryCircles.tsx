@@ -71,7 +71,7 @@ export default function StoryCircles({ currentUserId }: { currentUserId?: string
 
   return (
     <>
-      <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 shadow-sm">
         <div className="flex gap-4 overflow-x-auto pb-2">
           {/* Add story button */}
           <button
@@ -91,7 +91,7 @@ export default function StoryCircles({ currentUserId }: { currentUserId?: string
                 <Plus className="w-6 h-6 text-gray-600" />
               )}
             </div>
-            <p className="text-xs font-medium">
+            <p className="text-xs font-medium text-gray-900 dark:text-white">
               {hasOwnStory ? "Your Story" : "Add Story"}
             </p>
           </button>
@@ -118,7 +118,7 @@ export default function StoryCircles({ currentUserId }: { currentUserId?: string
                   )}
                 </div>
               </div>
-              <p className="text-xs font-medium truncate w-16 text-center">
+              <p className="text-xs font-medium truncate w-16 text-center text-gray-900 dark:text-white">
                 {group.user.name?.split(" ")[0] || group.user.username}
               </p>
             </Link>
@@ -133,22 +133,22 @@ export default function StoryCircles({ currentUserId }: { currentUserId?: string
           onClick={() => setShowCreateModal(false)}
         >
           <div
-            className="bg-white rounded-lg p-6 max-w-md w-full"
+            className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4">Create Story</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Create Story</h2>
             <form onSubmit={handleCreateStory} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Image URL</label>
+                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Image URL</label>
                 <input
                   type="url"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://example.com/image.jpg"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Story will expire in 24 hours
                 </p>
               </div>
@@ -156,7 +156,7 @@ export default function StoryCircles({ currentUserId }: { currentUserId?: string
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
+                  className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                 >
                   Cancel
                 </button>
